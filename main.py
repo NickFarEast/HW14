@@ -110,6 +110,9 @@ def get_by_genre(genre: str):
                               mimetype="application/json")
 
 
+
+
+
 if __name__ == '__main__':
     app.run()
 
