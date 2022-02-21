@@ -52,5 +52,37 @@ def get_by_year(year1: str, year2: str):
                               mimetype="application/json")
 
 
+@app.route("/rating/<value>")
+def get_by_rating(value: str):
+    sql = f"""SELECT *
+          FROM netflix n 
+          WHERE n.type = 'Movie'"""
+
+    if value == "children":
+        sql += f""" AND rating = 'G'"""
+    elif value == "family":
+        sql += f""" AND rating LIKE '%G'"""
+    elif value == "adult":
+        sql += f""" AND rating = 'R' OR rating = 'NC-17'"""
+    else:
+        return app.response_class(response=json.dumps({}),
+                                  status=200,
+                                  mimetype="application/json")
+
+    result = []
+    for item in functions.get_result(sql):
+        s = {
+            "title": item.get("title"),
+            "release_year": item.get("release_year"),
+            "description": item.get("description")
+        }
+        result.append(s)
+
+    return app.response_class(response=json.dumps(result),
+                              status=200,
+                              mimetype="application/json")
+
+
 if __name__ == '__main__':
     app.run()
+
