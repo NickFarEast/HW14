@@ -83,6 +83,33 @@ def get_by_rating(value: str):
                               mimetype="application/json")
 
 
+@app.route("/genre/<genre>")
+def get_by_genre(genre: str):
+    sql = f"""SELECT *
+          FROM netflix n 
+          WHERE n.listed_in LIKE '%{genre}%' 
+          AND n.release_year = (SELECT max(release_year)
+          FROM netflix n 
+          WHERE n.listed_in LIKE '%{genre}%')
+          AND n.type = 'Movie'
+          LIMIT 10
+          """
+
+    result = []
+    for item in functions.get_result(sql):
+        s = {
+            "title": item.get("title"),
+            "release_year": item.get("release_year"),
+            "description": item.get("description")
+
+        }
+        result.append(s)
+
+    return app.response_class(response=json.dumps(result),
+                              status=200,
+                              mimetype="application/json")
+
+
 if __name__ == '__main__':
     app.run()
 
