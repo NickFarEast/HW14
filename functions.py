@@ -1,21 +1,23 @@
 import sqlite3
 
 
-def get_result(sql):
+def get_result(sql, param=""):
     """ Функция подключения к базе данных
 
+    :param param:
     :param sql: параметры запроса в базу данных
     :return:  возвращает список словарей из базы данных соответствующих параметрам запроса
     """
     with sqlite3.connect("netflix.db") as con:
         con.row_factory = sqlite3.Row
         result = []
-        for item in con.execute(sql).fetchall():
+        for item in con.execute(sql, param).fetchall():
             s = dict(item)
 
             result.append(s)
 
         return result
+
 
 
 def cast_search(name1, name2):
@@ -26,15 +28,15 @@ def cast_search(name1, name2):
     :param name2: имя второго актера
     :return: возвращается множество с именами актеров
     """
-
+    param = (f'%{name1}%', f'%{name2}%')
     sql = f"""SELECT `cast`
-              FROM netflix n 
-              WHERE n.cast LIKE '%{name1}%' AND n.cast LIKE '%{name2}%'
+              FROM netflix n
+              WHERE n.cast LIKE ? AND n.cast LIKE ?
               """
 
     actors_list = []
     names_list = set()
-    result = get_result(sql)
+    result = get_result(sql, param)
 
     for item in result:
         for i in item.get("cast").split(","):
@@ -55,15 +57,15 @@ def search(type, date, genre):
     :param genre: Жанр
     :return: Возвращает список фильмов согласно заданным параметрам
     """
-
+    param = (type, date, f'%{genre}%')
     sql = f"""SELECT *
            FROM netflix n
-           WHERE type = '{type}' AND release_year = '{date}' AND listed_in LIKE '%{genre}%'
+           WHERE type = ? AND release_year = ? AND listed_in LIKE ?
            """
 
-    result = get_result(sql)
+    result = get_result(sql, param)
 
     return result
 
 
-print(cast_search("Jack Black", "Dustin Hoffman"))
+
